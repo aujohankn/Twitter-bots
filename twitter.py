@@ -11,6 +11,7 @@ auth.set_access_token("1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO", "1SR
 
 api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=10, retry_delay=10, retry_errors=set([503]))
 #hello from local
+#hello from remote
 def get_appropriate_account(i):
     try:
         user = api.get_user(i)
