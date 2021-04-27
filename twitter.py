@@ -96,27 +96,26 @@ def csv_to_list(name):
 
 def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     start_time = timeit.default_timer()
-    screen_name_list = pd.read_excel(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Implementering\test.xlsx")['screen_name'].values.tolist()
-    if screen_name in screen_name_list:
-        friend_screen_name = []
-        friend_followers_count = []
-        data_size = min(api.get_user(screen_name).followers_count, 5000)
-        for follower in tweepy.Cursor(api.followers, screen_name).items(data_size):
-            if (follower.followers_count > 0):
-                friend_screen_name.append(follower.screen_name)
-                friend_followers_count.append(follower.followers_count)
-        friend_list = {
-            'screen_name' : friend_screen_name,
-            'followers_count' : friend_followers_count
-        }
-        if write_csv:
-            df = pd.DataFrame(friend_list, columns=['screen_name', 'followers_count'])
-            df.to_csv(r"/home/johankn/Documents/fof"+str(screen_name)+".csv")
-        stop_time = timeit.default_timer()
-        print('Time: ', stop_time - start_time)
-        return friend_followers_count
-    else:
-        print("Error, screen name not found")
-        return None
+    friend_screen_name = []
+    friend_followers_count = []
+    data_size = min(api.get_user(screen_name).followers_count, 5000)
+    for follower in tweepy.Cursor(api.followers, screen_name).items(data_size):
+        if (follower.followers_count > 0):
+            friend_screen_name.append(follower.screen_name)
+            friend_followers_count.append(follower.followers_count)
+    friend_list = {
+        'screen_name' : friend_screen_name,
+        'followers_count' : friend_followers_count
+    }
+    if write_csv:
+        df = pd.DataFrame(friend_list, columns=['screen_name', 'followers_count'])
+        df.to_csv(r"/home/johankn/Dev/fof"+str(screen_name)+".csv")
+        print("Generated csv sheet successfully (fof)")
+    stop_time = timeit.default_timer()
+    print('Time: ', stop_time - start_time)
+    return friend_followers_count
 
-generate_excel(run_scan(start_id=93647534 ,size_of_result=5000))
+def fof_scan(csv_name):
+    screen_name_list = pd.read_csv(r"/home/johankn/Dev/"+str(csv_name)+".csv")['screen_name'].values.tolist()
+    for sn in screen_name_list:
+        get_friends_of_friends_count(screen_name=sn)
