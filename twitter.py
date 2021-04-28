@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import timeit
+import os.path
 
 
 
@@ -118,6 +119,9 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
 def fof_scan(csv_name):
     screen_name_list = pd.read_csv(r"/home/johankn/Dev/Documents-1/"+str(csv_name)+".csv")['screen_name'].values.tolist()
     for sn in screen_name_list:
-        get_friends_of_friends_count(screen_name=sn)
+        if (os.path.isfile(r"/home/johankn/Dev/Documents-1/fof"+str(sn)+".csv")):
+            print("A file with user " + str(sn)+ " already exists.")
+        else:
+            get_friends_of_friends_count(screen_name=sn)
 
 fof_scan("test")
