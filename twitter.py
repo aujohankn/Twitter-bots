@@ -109,13 +109,15 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     }
     if write_csv:
         df = pd.DataFrame(friend_list, columns=['screen_name', 'followers_count'])
-        df.to_csv(r"/home/johankn/Dev/fof"+str(screen_name)+".csv")
+        df.to_csv(r"/home/johankn/Dev/Documents-1/fof"+str(screen_name)+".csv")
         print("Generated csv sheet successfully (fof)")
     stop_time = timeit.default_timer()
     print('Time: ', stop_time - start_time)
     return friend_followers_count
 
 def fof_scan(csv_name):
-    screen_name_list = pd.read_csv(r"/home/johankn/Dev/"+str(csv_name)+".csv")['screen_name'].values.tolist()
+    screen_name_list = pd.read_csv(r"/home/johankn/Dev/Documents-1/"+str(csv_name)+".csv")['screen_name'].values.tolist()
     for sn in screen_name_list:
         get_friends_of_friends_count(screen_name=sn)
+
+fof_scan("test")
