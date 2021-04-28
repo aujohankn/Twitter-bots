@@ -10,7 +10,7 @@ import os.path
 auth = tweepy.OAuthHandler("hthiIooKXUK1nN13UAH49ZOs2", "gWnJTNB3xy9nOrAUjTqdiQCIe3WxvgzQUZTD4EVXWT5uw0X9ju")
 auth.set_access_token("1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO", "1SRoyDU4RNdEFsIBTC4305V76yWFFrH0Br23TCmSzjfBh")
 
-api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=10, retry_delay=10, retry_errors=set([503]))
+api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=10, retry_delay=10, retry_errors=set([104, 503]))
 #hello from local
 #hello from remote
 def get_appropriate_account(i):
@@ -100,7 +100,8 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     friend_screen_name = []
     friend_followers_count = []
     data_size = min(api.get_user(screen_name).followers_count, 5000)
-    for follower in tweepy.Cursor(api.followers, screen_name).items(data_size):
+    follower_list = tweepy.Cursor(api.followers, screen_name).items(data_size)
+    for follower in follower_list:
         if (follower.followers_count > 0):
             friend_screen_name.append(follower.screen_name)
             friend_followers_count.append(follower.followers_count)
