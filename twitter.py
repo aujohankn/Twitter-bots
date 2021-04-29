@@ -99,9 +99,9 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     start_time = timeit.default_timer()
     friend_screen_name = []
     friend_followers_count = []
-    data_size = min(api.get_user(screen_name).followers_count, 5000)
-    follower_list = tweepy.Cursor(api.followers, screen_name).items(data_size)
     try:
+        data_size = min(api.get_user(screen_name).followers_count, 5000)
+        follower_list = tweepy.Cursor(api.followers, screen_name).items(data_size)
         for follower in follower_list:
             if (follower.followers_count > 0):
                 friend_screen_name.append(follower.screen_name)
