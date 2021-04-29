@@ -108,6 +108,8 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
                 friend_followers_count.append(follower.followers_count)
     except tweepy.TweepError as e:
         print("Something went wrong: " + str(e))
+    finally:
+        return None
         
     friend_list = {
         'screen_name' : friend_screen_name,
