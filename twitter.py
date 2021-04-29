@@ -101,10 +101,14 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     friend_followers_count = []
     data_size = min(api.get_user(screen_name).followers_count, 5000)
     follower_list = tweepy.Cursor(api.followers, screen_name).items(data_size)
-    for follower in follower_list:
-        if (follower.followers_count > 0):
-            friend_screen_name.append(follower.screen_name)
-            friend_followers_count.append(follower.followers_count)
+    try:
+        for follower in follower_list:
+            if (follower.followers_count > 0):
+                friend_screen_name.append(follower.screen_name)
+                friend_followers_count.append(follower.followers_count)
+    except tweepy.TweepError as e:
+        print("Something went wrong: " + str(e))
+        
     friend_list = {
         'screen_name' : friend_screen_name,
         'followers_count' : friend_followers_count
