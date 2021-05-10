@@ -115,16 +115,16 @@ def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     }
     if write_csv:
         df = pd.DataFrame(friend_list, columns=['screen_name', 'friends_count'])
-        df.to_csv(r"/home/johankn/Dev/Documents-1/fof"+str(screen_name)+".csv")
+        df.to_csv(r"/home/johankn/Dev/Documents-1/Fof csv files/fof"+str(screen_name)+".csv")
         print("Generated csv sheet successfully (fof)")
     stop_time = timeit.default_timer()
     print('Time: ', stop_time - start_time)
     return friend_friends_count
 
 def fof_scan(csv_name):
-    screen_name_list = pd.read_csv(r"/home/johankn/Dev/Documents-1/"+str(csv_name)+".csv")['screen_name'].values.tolist()
+    screen_name_list = pd.read_csv(r"/home/johankn/Dev/Documents-1/Fof csv files/"+str(csv_name)+".csv")['screen_name'].values.tolist()
     for sn in screen_name_list:
-        if (os.path.isfile(r"/home/johankn/Dev/Documents-1/fof"+str(sn)+".csv")):
+        if (os.path.isfile(r"/home/johankn/Dev/Documents-1/Fof csv files/fof"+str(sn)+".csv")):
             print("A file with user " + str(sn)+ " already exists.")
         else:
             get_friends_of_friends_count(screen_name=sn)
