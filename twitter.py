@@ -44,7 +44,7 @@ def run_scan(start_id=50000, size_of_result=10):
             check_id += 10000
     return accounts
 
-def benford_plot(data:list):
+def benford_plot(data:list, screen_name=""):
     digits = np.arange(1,10)
     digit_probs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     data_length = len(data)
@@ -58,7 +58,7 @@ def benford_plot(data:list):
     plt.xticks(digits)
     plt.xlabel('Digits')
     plt.ylabel('Probability')
-    plt.title("Benford's Law: Probability of Leading Digits")
+    plt.title("Benford's Law: User " + str(screen_name) +" with " + str(data_length) + " followers.")
     plt.plot([1, 2, 3, 4, 5, 6, 7, 8, 9], [0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046], c='red')
     plt.show()
 
@@ -98,28 +98,28 @@ def csv_to_list(name):
 def get_friends_of_friends_count(screen_name=50000, write_csv=True):
     start_time = timeit.default_timer()
     friend_screen_name = []
-    friend_followers_count = []
+    friend_friends_count = []
     try:
-        data_size = min(api.get_user(screen_name).followers_count, 5000)
-        follower_list = tweepy.Cursor(api.followers, screen_name).items(data_size)
-        for follower in follower_list:
-            if (follower.followers_count > 0):
-                friend_screen_name.append(follower.screen_name)
-                friend_followers_count.append(follower.followers_count)
+        data_size = min(api.get_user(screen_name).friends_count, 5000)
+        friend_list = tweepy.Cursor(api.friends, screen_name).items(data_size)
+        for friend in friend_list:
+            if (friend.friends_count > 0):
+                friend_screen_name.append(friend.screen_name)
+                friend_friends_count.append(friend.friends_count)
     except tweepy.TweepError as e:
         print("Something went wrong: " + str(e))
         return None
     friend_list = {
         'screen_name' : friend_screen_name,
-        'followers_count' : friend_followers_count
+        'friends_count' : friend_friends_count
     }
     if write_csv:
-        df = pd.DataFrame(friend_list, columns=['screen_name', 'followers_count'])
+        df = pd.DataFrame(friend_list, columns=['screen_name', 'friends_count'])
         df.to_csv(r"/home/johankn/Dev/Documents-1/fof"+str(screen_name)+".csv")
         print("Generated csv sheet successfully (fof)")
     stop_time = timeit.default_timer()
     print('Time: ', stop_time - start_time)
-    return friend_followers_count
+    return friend_friends_count
 
 def fof_scan(csv_name):
     screen_name_list = pd.read_csv(r"/home/johankn/Dev/Documents-1/"+str(csv_name)+".csv")['screen_name'].values.tolist()
@@ -128,5 +128,3 @@ def fof_scan(csv_name):
             print("A file with user " + str(sn)+ " already exists.")
         else:
             get_friends_of_friends_count(screen_name=sn)
-
-fof_scan("test")
