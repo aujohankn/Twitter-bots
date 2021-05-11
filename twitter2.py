@@ -128,5 +128,9 @@ def word_scan(csv_name):
         if (os.path.isfile(r"/home/johankn/Dev/Documents-1/Tweets/tweet"+str(sn)+".csv")):
             print("A file with user " + str(sn)+ " already exists.")
         else:
-            generate_tweets_csv(run_tweet_scan(userID=sn))
-
+            try:
+                generate_tweets_csv(run_tweet_scan(userID=sn))
+            except tweepy.TweepError as error:
+                print(error)
+                continue
+word_scan("test2")
