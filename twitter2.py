@@ -34,13 +34,14 @@ def remove_punctuation(text):
   
 
 #https://fairyonice.github.io/extract-someones-tweet-using-tweepy.html
-def run_tweet_scan(userID=50000):
+def run_tweet_scan(screen_name=50000):
     try:
-        api.get_user(userID=userID)
+        api.get_user(id=screen_name)
+        print('Found user')
     except tweepy.error.TweepError as error:
         print(error)
         return None
-    tweets = api.user_timeline(screen_name=userID, 
+    tweets = api.user_timeline(id=screen_name, 
                            # 200 is the maximum allowed count
                            count=200,
                            include_rts = False,
@@ -52,7 +53,7 @@ def run_tweet_scan(userID=50000):
     all_tweets.extend(tweets)
     oldest_id = tweets[-1].id
     while True:
-        tweets = api.user_timeline(screen_name=userID, 
+        tweets = api.user_timeline(id=screen_name, 
                            # 200 is the maximum allowed count
                            count=200,
                            include_rts = False,
@@ -68,7 +69,7 @@ def run_tweet_scan(userID=50000):
         print('N of tweets downloaded till now {}'.format(len(all_tweets)))
     return all_tweets
 
-def generate_tweets_csv(data:list):
+def generate_tweets_csv(data:list, sn):
     tweet_create_time = []
     tweet_text = []
 
@@ -82,7 +83,7 @@ def generate_tweets_csv(data:list):
         'tweet_text': tweet_text
         }
     df = pd.DataFrame(user_list, columns=['created_at', 'tweet_text'])
-    df.to_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Implementering\words_test.csv")
+    df.to_csv(r"/home/johankn/Dev/Documents-1/Tweets/tweet"+str(sn)+".csv")
     print("Generated csv sheet successfully")
 
 def zipf_plot(userID=50000):
@@ -133,10 +134,13 @@ def word_scan(csv_name):
         if (os.path.isfile(r"/home/johankn/Dev/Documents-1/Tweets/tweet"+str(sn)+".csv")):
             print("A file with user " + str(sn)+ " already exists.")
         else:
+            print(sn)
             try:
-                tweets = run_tweet_scan(userID=sn)
+                tweets = run_tweet_scan(screen_name=sn)
                 if tweets != None:
-                    generate_tweets_csv(tweets)
+                    generate_tweets_csv(tweets, sn)
             except tweepy.TweepError as error:
                 print(error)
                 continue
+
+word_scan("test2")
