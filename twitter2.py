@@ -35,6 +35,11 @@ def remove_punctuation(text):
 
 #https://fairyonice.github.io/extract-someones-tweet-using-tweepy.html
 def run_tweet_scan(userID=50000):
+    try:
+        api.get_user(userID=userID)
+    except tweepy.error.TweepError as error:
+        print(error)
+        return None
     tweets = api.user_timeline(screen_name=userID, 
                            # 200 is the maximum allowed count
                            count=200,
@@ -129,8 +134,9 @@ def word_scan(csv_name):
             print("A file with user " + str(sn)+ " already exists.")
         else:
             try:
-                generate_tweets_csv(run_tweet_scan(userID=sn))
+                tweets = run_tweet_scan(userID=sn)
+                if tweets != None:
+                    generate_tweets_csv(tweets)
             except tweepy.TweepError as error:
                 print(error)
                 continue
-word_scan("test2")
