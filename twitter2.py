@@ -49,6 +49,9 @@ def run_tweet_scan(screen_name=50000):
                            # otherwise only the first 140 words are extracted
                            tweet_mode = 'extended'
                            )
+    if not tweets:
+        print("No Tweets")
+        return None
     all_tweets = []
     all_tweets.extend(tweets)
     oldest_id = tweets[-1].id
@@ -86,16 +89,15 @@ def generate_tweets_csv(data:list, sn):
     df.to_csv(r"/home/johankn/Dev/Documents-1/Tweets/tweet"+str(sn)+".csv")
     print("Generated csv sheet successfully")
 
-def zipf_plot(userID=50000):
-    try:
-        tweets = run_tweet_scan(userID)
-    except IndexError as error:
-        print(error)
-        return None
+def read_tweets(userID):
+    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\Tweets\tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
+    return df
+
+def zipf_plot(data:list, userID):
     words = []
     d = []
-    for t in tweets:
-        text = t.full_text
+    tweet_count = len(data)
+    for i,text in enumerate(data):
         try:
             l = lang.detect(str(text))
             if l != "en":
@@ -103,30 +105,40 @@ def zipf_plot(userID=50000):
         except lang.LangDetectException as error:
             print("Something went wrong: " + error)
             continue
-        text = remove_punctuation(text)
-        text = stem_words(text)
-        #print(text)
-        #Is word unique
-        for t in text:
-            if t in d:
-                x = d.index(t)
-                words[x][1] += 1
-            else:
-                words.append([t,1])
-                d.append(t)
+        if i % 250 == 0:
+            print(str(round(100*i/tweet_count)) + "% completed")
+        text_words = text.split(",")
+        words, d = zipf_plot_run_word_count(text_words, words, d)
     words.sort(key=lambda x:x[1], reverse=True)
     print(words[:20])
-    plt.rc('font', size=16)
+    plt.rc('font', size=14)
     fig, ax = plt.subplots(figsize=(12, 6))
     plt.title("Zipf's's Law: User " + str(userID))
     xax = []
     yax = []
+    yax_expected = []
+    zipf_n = words[0][1]
     for i in range(20):
         xax.append(words[i][0])
         yax.append(words[i][1])
-    plt.plot(xax,yax, c='red')
+        yax_expected.append(zipf_n/(i+1))
+    ax.bar(xax, yax)
+    plt.plot(xax,yax_expected, c='red')
     plt.show()
     return None
+
+def zipf_plot_run_word_count(text_array, words, d):
+    for t in text_array:
+        t = t.strip("[]'' '")
+        if t.startswith("http") or t.isnumeric():
+            continue
+        if t in d:
+            x = d.index(t)
+            words[x][1] += 1
+        else:
+            words.append([t,1])
+            d.append(t)
+    return words, d
 
 def word_scan(csv_name):
     screen_name_list = pd.read_csv(r"/home/johankn/Dev/Documents-1/"+str(csv_name)+".csv")['screen_name'].values.tolist()
@@ -143,4 +155,4 @@ def word_scan(csv_name):
                 print(error)
                 continue
 
-word_scan("test2")
+#zipf_plot(userID=10134642)
