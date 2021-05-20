@@ -86,5 +86,3 @@ def zipf_plot_run_word_count(text_array, words, d):
     return words, d
 
 
-
-zipf_plot(read_tweets(userID=973774553036898304),userID=973774553036898304)

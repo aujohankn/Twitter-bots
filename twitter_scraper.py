@@ -38,12 +38,10 @@ def account_scan(start_id=50000, size_of_result=10):
             check_id += 1
         else:
             accounts.append(check_id)
-            if (len(accounts) % 100 == 0):
-                generate_account_csv(accounts)
             check_id += 10000
     return accounts
 
-def generate_account_csv(data:list):
+def generate_account_csv(data:list, name):
     user_id_list = []
     user_name_list = []
     user_followers_count_list = []
@@ -66,11 +64,7 @@ def generate_account_csv(data:list):
         'likes_count': user_likes_count
         }
     df = pd.DataFrame(user_list, columns=['id', 'name', 'followers_count', 'following_count' , 'statuses_count', 'likes_count'])
-    i = 0
-    while (os.path.isfile(root_path+"/Accounts/account_scan"+str(i)+".csv")):
-        print("A file with account_scan"+str(i) + " already exists.")
-        i += 1
-    df.to_csv(root_path+"/Accounts/account_scan"+str(i)+".csv")
+    df.to_csv(root_path+"/Accounts/account_scan"+str(name)+".csv")
     print("Generated csv sheet successfully")
 
 def csv_to_list(path):
@@ -180,13 +174,13 @@ def word_scan(account_id):
 
 def run_full_scan():
     print("Full scan begun...")
-    last_id = 50000
+    last_id = 1040528
     while True:
         print("Retrieving accounts, starting from " + str(last_id))
-        accounts = account_scan(start_id=last_id, size_of_result=1000)
+        accounts = account_scan(start_id=last_id, size_of_result=200)
         last_id = accounts[-1].id
         print("Accounts retrieved")
-        generate_account_csv(accounts)
+        generate_account_csv(accounts, str(start_id) +"-"+ str(check_id))
         for acc in accounts:
             print("Run scan for " +str(acc.id))
             print("Friends of friends")
