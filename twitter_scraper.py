@@ -6,7 +6,7 @@ import timeit
 import os.path
 from twitter_zipfs_law import stem_words, remove_punctuation
 
-root_path = r"/home/johankn/Dev/ScrapedData"
+root_path = r"/home/johankn/Dev/Documents-1/ScrapedData/"
 
 auth = tweepy.OAuthHandler("hthiIooKXUK1nN13UAH49ZOs2", "gWnJTNB3xy9nOrAUjTqdiQCIe3WxvgzQUZTD4EVXWT5uw0X9ju")
 auth.set_access_token("1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO", "1SRoyDU4RNdEFsIBTC4305V76yWFFrH0Br23TCmSzjfBh")
