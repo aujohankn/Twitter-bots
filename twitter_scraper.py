@@ -172,15 +172,15 @@ def word_scan(account_id):
                 print(error)
                 continue
 
-def run_full_scan():
+def run_full_scan(start_id=1040528):
     print("Full scan begun...")
-    last_id = 1040528
+    last_id = start_id
     while True:
         print("Retrieving accounts, starting from " + str(last_id))
-        accounts = account_scan(start_id=last_id, size_of_result=200)
-        last_id = accounts[-1].id
+        accounts = account_scan(start_id=last_id, size_of_result=50)
+        last_id = accounts[-1]
         print("Accounts retrieved")
-        generate_account_csv(accounts, str(start_id) +"-"+ str(check_id))
+        generate_account_csv(accounts, str(start_id) +"-"+ str(last_id))
         for acc in accounts:
             print("Run scan for " +str(acc.id))
             print("Friends of friends")
