@@ -38,7 +38,6 @@ def account_scan(start_id=50000, size_of_result=10):
             check_id += 1
         else:
             accounts.append(check_id)
-            print(len(accounts))
             if (len(accounts) % 100 == 0):
                 generate_account_csv(accounts)
             check_id += 10000
@@ -195,3 +194,5 @@ def run_full_scan():
             print("Tweet scan")
             word_scan(acc.id)
             print("Account finished")
+
+run_full_scan()
