@@ -31,11 +31,11 @@ def remove_punctuation(text):
     return text.translate(translator)
   
 def read_tweets(userID):
-    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\Tweets\tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
+    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Tweets\tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
     return df
 
 def read_full_tweets(userID):
-    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\Tweets\tweet" + str(userID) + ".csv").values.tolist()
+    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Tweets\tweet" + str(userID) + ".csv").values.tolist()
     return df
 
 def zipf_plot(data:list, userID):
@@ -55,8 +55,9 @@ def zipf_plot(data:list, userID):
         text_words = text.split(",")
         words, d = zipf_plot_run_word_count(text_words, words, d)
     words.sort(key=lambda x:x[1], reverse=True)
-    print(words[:20])
+    #print(words[:20])
     plt.rc('font', size=14)
+    
     fig, ax = plt.subplots(figsize=(12, 6))
     plt.title("Zipf's's Law: User " + str(userID))
     xax = []
@@ -68,7 +69,10 @@ def zipf_plot(data:list, userID):
         yax.append(words[i][1])
         yax_expected.append(zipf_n/(i+1))
     ax.bar(xax, yax)
+    ax.set_xticklabels(xax, rotation=45)
+    ax.set_ylabel("Word count")
     plt.plot(xax,yax_expected, c='red')
+    plt.grid(color = 'grey', linestyle = '--', linewidth = 0.5, axis="y")
     plt.show()
     return None
 
@@ -85,4 +89,8 @@ def zipf_plot_run_word_count(text_array, words, d):
             d.append(t)
     return words, d
 
+def load_and_zipf_plot(userID):
+    tweets = read_tweets(userID)
+    zipf_plot(tweets, userID)
 
+#zipf_plot(read_tweets(10114632),10114632)
