@@ -6,7 +6,7 @@ import timeit
 import os.path
 from twitter_zipfs_law import stem_words, remove_punctuation
 
-root_path = r"/home/johankn/Dev/Documents-1/ScrapedData/"
+root_path = r"/home/johankn/Dev/Documents-1/ScrapedData"
 
 auth = tweepy.OAuthHandler("hthiIooKXUK1nN13UAH49ZOs2", "gWnJTNB3xy9nOrAUjTqdiQCIe3WxvgzQUZTD4EVXWT5uw0X9ju")
 auth.set_access_token("1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO", "1SRoyDU4RNdEFsIBTC4305V76yWFFrH0Br23TCmSzjfBh")
@@ -24,7 +24,7 @@ def get_appropriate_account(i):
         except tweepy.error.TweepError:
             return None
         else:
-            if (friends > 99 & friends < 10000):
+            if (friends > 99 and friends < 10000):
                 return user
 
 #run scan
@@ -45,7 +45,7 @@ def generate_account_csv(data:list, name):
     user_id_list = []
     user_name_list = []
     user_followers_count_list = []
-    user_following_count = []
+    user_friends_count = []
     user_statuses_count = []
     user_likes_count = []
     for i in data:
@@ -53,19 +53,19 @@ def generate_account_csv(data:list, name):
         user = api.get_user(i)
         user_name_list.append(user.name)
         user_followers_count_list.append(user.followers_count)
-        user_following_count.append(user.friends_count)
+        user_friends_count.append(user.friends_count)
         user_statuses_count.append(user.statuses_count)
         user_likes_count.append(user.favourites_count)
     user_list = {'id' : user_id_list,
         'name': user_name_list,
         'followers_count': user_followers_count_list,
-        'following_count' : user_following_count,
+        'friends_count' : user_friends_count,
         'statuses_count': user_statuses_count,
         'likes_count': user_likes_count
         }
-    df = pd.DataFrame(user_list, columns=['id', 'name', 'followers_count', 'following_count' , 'statuses_count', 'likes_count'])
+    df = pd.DataFrame(user_list, columns=['id', 'name', 'followers_count', 'friends_count' , 'statuses_count', 'likes_count'])
     df.to_csv(root_path+"/Accounts/account_scan"+str(name)+".csv")
-    print("Generated csv sheet successfully")
+    print("Generated csv sheet successfully at " + root_path+"/Accounts/account_scan"+str(name)+".csv")
 
 def csv_to_list(path):
     df = pd.read_csv(path)['friends_count'].values.tolist()
@@ -91,11 +91,11 @@ def get_friends_of_friends_count(id=50000, write_csv=True):
     if write_csv:
         df = pd.DataFrame(friend_list, columns=['id', 'friends_count'])
         df.to_csv(root_path+"/Friends/friend_scan"+str(id)+".csv")
-        print("Generated csv sheet successfully")
+        print("Generated csv sheet successfully at " + root_path+"/Friends/friend_scan"+str(id)+".csv")
     return friend_list_friends_count
 
-def fof_scan(account_id):
-    id_list = pd.read_csv(root_path+"/Accounts/account_scan"+str(account_id)+".csv")['id'].values.tolist()
+def fof_scan(filename):
+    id_list = pd.read_csv(root_path+"/Accounts/account_scan"+str(filename)+".csv")['id'].values.tolist()
     for i in id_list:
         if (os.path.isfile(root_path+"/Friends/friend_scan"+str(i)+".csv")):
             print("A file with user " + str(i)+ " already exists.")
@@ -158,8 +158,8 @@ def generate_tweets_csv(data:list, id):
     df.to_csv(root_path+"/Tweets/tweet"+str(id)+".csv")
     print("Generated csv sheet successfully")
 
-def word_scan(account_id):
-    id_list = pd.read_csv(root_path+"/Accounts/account_scan"+str(account_id)+".csv")['id'].values.tolist()
+def word_scan(filename):
+    id_list = pd.read_csv(root_path+"/Accounts/account_scan"+str(filename)+".csv")['id'].values.tolist()
     for i in id_list:
         if (os.path.isfile(root_path+"/Tweets/tweet"+str(i)+".csv")):
             print("A file with user " + str(i)+ " already exists.")
@@ -172,21 +172,26 @@ def word_scan(account_id):
                 print(error)
                 continue
 
-def run_full_scan(start_id=1040528):
+def run_full_scan(start_id=5375633):
     print("Full scan begun...")
     last_id = start_id
     while True:
         print("Retrieving accounts, starting from " + str(last_id))
         accounts = account_scan(start_id=last_id, size_of_result=50)
+        start_id = last_id
         last_id = accounts[-1]
         print("Accounts retrieved")
         generate_account_csv(accounts, str(start_id) +"-"+ str(last_id))
+        
+        print("Friends of friends")
+        fof_scan(str(start_id) +"-"+ str(last_id))
+        print("Tweet scan")
+        word_scan(str(start_id) +"-"+ str(last_id))
+        last_id += 1
         for acc in accounts:
-            print("Run scan for " +str(acc.id))
-            print("Friends of friends")
-            fof_scan(acc.id)
-            print("Tweet scan")
-            word_scan(acc.id)
+            print("Run scan for " +str(acc))
+
+
             print("Account finished")
 
 run_full_scan()
