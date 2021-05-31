@@ -1,20 +1,24 @@
 import matplotlib.pyplot as plt
 import numpy as np
+
 from twitter_scraper import csv_to_list
 
 def benford_plot(data:list, id=""):
     digits = np.arange(1,10)
     digit_probs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    digit_count = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     data_length = len(data)
     for number in data:
         first_digit = int(str(number)[:1])
         digit_probs[first_digit-1] += 1 / data_length
-
+        digit_count[first_digit-1] += 1
     plt.rc('font', size=16)
     fig, ax = plt.subplots(figsize=(12, 6))
     ud = ax.bar(digits, digit_probs)
+    for i, d in enumerate(digit_probs):
+        plt.text(i+.8,d+.005,digit_count[i], rotation=45)
     ud.set_label("User Data")
-    ax.set_yticks([0, .05, .1, .15, .2, .25, .3, .35, .4, .45])
+    plt.yticks([0, .05, .1, .15, .2, .25, .3, .35, .4, .45])
     ax.set_yticklabels(["0%", "5%", "10%", "15%", "20%", "25%", "30%", "35%", "40%", "45%"])
     plt.xticks(digits)
     plt.xlabel('Digits')

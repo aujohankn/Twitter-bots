@@ -182,7 +182,6 @@ def run_full_scan(start_id=5375633):
         last_id = accounts[-1]
         print("Accounts retrieved")
         generate_account_csv(accounts, str(start_id) +"-"+ str(last_id))
-        
         print("Friends of friends")
         fof_scan(str(start_id) +"-"+ str(last_id))
         print("Tweet scan")
@@ -194,4 +193,4 @@ def run_full_scan(start_id=5375633):
 
             print("Account finished")
 
-run_full_scan()
+#run_full_scan()
