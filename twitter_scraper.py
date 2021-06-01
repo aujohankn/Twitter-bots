@@ -175,6 +175,17 @@ def word_scan(filename):
 def run_full_scan(start_id=5375633):
     print("Full scan begun...")
     last_id = start_id
+    print("Checking previous csv sheets")
+    for file in os.listdir(root_path+"/Accounts/"):
+        if os.path.isfile(os.path.join(root_path+"/Accounts/",file)) and "account_scan"+str(start_id) in file:
+            df = pd.read_csv(root_path+"/Accounts/"+str(file))
+            start_id = df.iloc[0]['id']
+            last_id = df.iloc[49]['id']
+            print("Friends of friends")
+            fof_scan(str(start_id) +"-"+ str(last_id))
+            print("Tweet scan")
+            word_scan(str(start_id) +"-"+ str(last_id))
+    print("Starting loop...")
     while True:
         print("Retrieving accounts, starting from " + str(last_id))
         accounts = account_scan(start_id=last_id, size_of_result=50)
