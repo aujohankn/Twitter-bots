@@ -178,13 +178,15 @@ def run_full_scan(start_id=5375633):
     print("Checking previous csv sheets")
     for file in os.listdir(root_path+"/Accounts/"):
         if os.path.isfile(os.path.join(root_path+"/Accounts/",file)) and "account_scan"+str(start_id) in file:
-            df = pd.read_csv(root_path+"/Accounts/"+str(file))
+            
             name = file.replace("account_scan", '')
             name = name.replace(".csv", '')
             print("Friends of friends")
             fof_scan(name)
             print("Tweet scan")
             word_scan(name)
+            if "-" in name:
+                start_id = name.split('-')[1]
     print("Starting loop...")
     while True:
         print("Retrieving accounts, starting from " + str(last_id))
