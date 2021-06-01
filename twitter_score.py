@@ -12,7 +12,9 @@ from twitter_benfords_law import csv_to_list
 import twitter_zipfs_law as zl
 import tm_tools as tm
 
-time_threshold = 60*60*24
+path = r"/home/johankn/Dev/Documents-1/ScrapedData"
+
+time_threshold = 60*60 #an hour
 most_common_words = ["the", "be", "to", "of", "and", "a", "in", "that", "have",
                     "i", "it", "for", "not", "on", "with", "he", "as", "you", "do", "at"
                     "this", "but" , "his", "by", "from", "they", "we", "say"]
@@ -35,6 +37,7 @@ def benford_calculate_score(data:list):
 def zipf_calculate_score(data:list):
     words = []
     tweet_count = len(data)
+    
     d = []
     
     for i,text in enumerate(data):
@@ -50,23 +53,32 @@ def zipf_calculate_score(data:list):
         text_words = text.split(",")
         words, d = zl.zipf_plot_run_word_count(text_words, words, d)
     words.sort(key=lambda x:x[1], reverse=True)
+    total_words = sum(words[i][1] for i in range(len(words)))
+    print("Total words",total_words)
+    if total_words < 10:
+        return -1
     xax = []
     yax = []
     yax_expected = []
-    zipf_n = words[0][1]
+    try:
+        zipf_n = words[0][1]
+    except IndexError as e:
+        print(e)
+        return -1    
     for i in range(len(words)):
         xax.append(words[i][0])
         yax.append(words[i][1])
         yax_expected.append(zipf_n/(i+1))
-
-    total_words = sum(words[i][1] for i in range(len(words)))
-    print(total_words)
     score:float = 0
     for i in range(20):
-        if yax[i] == yax[i+1] and yax[i] > 1:
-            s = ("Same occurence count for words", words[i][0], "and", words[i+1][0], ":", yax[i])
-            print(s)
-            score += 5
+        try:
+            if yax[i] == yax[i+1] and yax[i] > 100:
+                s = ("Same occurence count for words", words[i][0], "and", words[i+1][0], ":", yax[i])
+                print(s)
+                score += 5
+        except IndexError as e:
+            print(e)
+            continue
     for i, w in enumerate(words):
         n = yax_expected[i]
         y = yax[i]
@@ -79,7 +91,12 @@ def tweet_calculate_score(data):
     zipf_score = zipf_calculate_score(tweet_text_list)
     time_score:float = 0
     tweet_time_list = data['created_at'].values.tolist()
-    _,_,sep_array = tm.analyze_tweet_times(name_to_get=" ", all_tweets=tweet_time_list)
+    try:
+        _,_,sep_array = tm.analyze_tweet_times(name_to_get=" ", all_tweets=tweet_time_list)
+    except:
+        return -1, -1
+    if len(sep_array) == 0:
+        return -1, -1
     time_average_dif = [0,0]
     time_average_dif = sum(sep_array) / len(sep_array)
     time_median_dif = [statistics.median(sep_array[i,0] for i in range(len(sep_array))),
@@ -96,10 +113,17 @@ def tweet_calculate_score(data):
 
 def calculate_user_total_score(userID):
     print("Calculating score for user", userID)
-    friend_list = csv_to_list(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Friends\friend_scan"+str(userID)+".csv")
+    try:
+        friend_list = csv_to_list(path+"/Friends/friend_scan"+str(userID)+".csv")
+        tweet_list = df = pd.read_csv(path+"/Tweets/tweet"+str(userID)+".csv")
+    except FileNotFoundError as e:
+        print(e)
+        return -1, -1, -1, -1
     benford_score = benford_calculate_score(friend_list)
-    tweet_list = zl.read_full_tweets(userID)
+    
     zipf_score, time_score = tweet_calculate_score(tweet_list)
+    if zipf_score == -1 or time_score == -1:
+        return -1, -1, -1, -1
     total_score = benford_score + zipf_score + time_score
     print("Benford score",benford_score)
     print("Zipf score", zipf_score)
@@ -109,7 +133,6 @@ def calculate_user_total_score(userID):
 
 def run_score_scan():
     print("Begin score scan")
-    path = r"/home/johankn/Dev/Documents-1/ScrapedData"
     file_list = os.listdir(path+'/Accounts/')
 
     user_id_list = []
@@ -122,7 +145,6 @@ def run_score_scan():
         new_data = pd.read_csv(path+'/Accounts/' + file)
 
         for index, row in new_data.iterrows():
-            print(index)
             userID = row[1]
             total_score, benford_score, zipf_score, time_score = calculate_user_total_score(userID)
             user_id_list.append(userID)
