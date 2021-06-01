@@ -179,12 +179,12 @@ def run_full_scan(start_id=5375633):
     for file in os.listdir(root_path+"/Accounts/"):
         if os.path.isfile(os.path.join(root_path+"/Accounts/",file)) and "account_scan"+str(start_id) in file:
             df = pd.read_csv(root_path+"/Accounts/"+str(file))
-            start_id = df.iloc[0]['id']
-            last_id = df.iloc[49]['id']
+            name = file.replace("account_scan", '')
+            name = name.replace(".csv", '')
             print("Friends of friends")
-            fof_scan(str(start_id) +"-"+ str(last_id))
+            fof_scan(name)
             print("Tweet scan")
-            word_scan(str(start_id) +"-"+ str(last_id))
+            word_scan(name)
     print("Starting loop...")
     while True:
         print("Retrieving accounts, starting from " + str(last_id))
@@ -204,4 +204,4 @@ def run_full_scan(start_id=5375633):
 
             print("Account finished")
 
-#run_full_scan()
+run_full_scan()
