@@ -77,7 +77,6 @@ def make_heated_time_map(name_to_get, sep_array, Nside, width):
 	plt.xlabel('Time Before Tweet',fontsize=14)
 	plt.ylabel('Time After Tweet' ,fontsize=14)
 	plt.title("Heated Time Map")
-	#plt.savefig("Timemaps\m" +name_to_get+'.png', format='png', dpi=300)
 	plt.tight_layout()
 	plt.show()
 
