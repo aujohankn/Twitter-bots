@@ -1,9 +1,15 @@
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 
 from twitter_scraper import csv_to_list
 
-def benford_plot(data:list, id=""):
+def benford_plot(data:list):
+    # Inspired by/from https://www.learndatasci.com/glossary/benfords-law/
+    # Draws the Benford's law distribution from a dataset of friends' of friends
+    # Also draws the expected distribution
+    # Input: List of friends' friend count
+    # Returns nothing
     digits = np.arange(1,10)
     digit_probs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
     digit_count = [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -28,8 +34,11 @@ def benford_plot(data:list, id=""):
     bnf.set_label("Benford's Law")
     plt.grid(color = 'grey', linestyle = '--', linewidth = 0.5,)
     plt.legend()
+    plt.tight_layout()
     plt.show()
 
 def load_and_benford_plot(userID):
-    list = csv_to_list(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Friends\friend_scan"+str(userID)+".csv")
-    benford_plot(list,userID)
+    # Function for gui, simply runs the two functions in sequence
+    path = os.getcwd()+"\ScrapedData\Friends\\"
+    list = csv_to_list(path+"friend_scan"+str(userID)+".csv")
+    benford_plot(list)

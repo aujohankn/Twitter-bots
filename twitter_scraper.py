@@ -1,19 +1,23 @@
 from re import I
 import tweepy
-import numpy as np
 import pandas as pd
-import timeit
 import os.path
 from twitter_zipfs_law import stem_words, remove_punctuation
+import twitter_auth as auth
 
-root_path = r"/home/johankn/Dev/Documents-1/ScrapedData"
+path = path = os.getcwd()+"\ScrapedData\\"
 
-auth = tweepy.OAuthHandler("hthiIooKXUK1nN13UAH49ZOs2", "gWnJTNB3xy9nOrAUjTqdiQCIe3WxvgzQUZTD4EVXWT5uw0X9ju")
-auth.set_access_token("1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO", "1SRoyDU4RNdEFsIBTC4305V76yWFFrH0Br23TCmSzjfBh")
+#Insert authentication keys below
+consumer_key = ""
+consumer_secret = ""
+access_key = ""
+access_secret = ""
 
-api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=10, retry_delay=10, retry_errors=set([104, 503]))
+api = auth.get_api(consumer_key, consumer_secret, access_key, access_secret)
 
 def get_appropriate_account(i):
+    # Finds account from id. Returns none if suspended or private
+    # Returns the user if they have between 100 and 10000 friends
     try:
         user = api.get_user(i)
     except tweepy.error.TweepError:
@@ -27,9 +31,10 @@ def get_appropriate_account(i):
             if (friends > 99 and friends < 10000):
                 return user
 
-#run scan
-#returns list of id as int
 def account_scan(start_id=50000, size_of_result=10):
+    # Finds all appropriate accounts, starting from id start_id
+    # Input: where to start and the how many accounts to gather and export to .csv
+    # Returns a list of Twitter accounts
     check_id = start_id
     accounts = []
     while (len(accounts) < size_of_result):
@@ -42,6 +47,10 @@ def account_scan(start_id=50000, size_of_result=10):
     return accounts
 
 def generate_account_csv(data:list, name):
+    # Generates a .csv file in /ScrapedData/Accounts from the dataset
+    # Input: list of account information, name of the .csv sheet
+    # Name is always concatenated with 'account_scan'
+    # Returns nothing
     user_id_list = []
     user_name_list = []
     user_followers_count_list = []
@@ -64,14 +73,19 @@ def generate_account_csv(data:list, name):
         'likes_count': user_likes_count
         }
     df = pd.DataFrame(user_list, columns=['id', 'name', 'followers_count', 'friends_count' , 'statuses_count', 'likes_count'])
-    df.to_csv(root_path+"/Accounts/account_scan"+str(name)+".csv")
-    print("Generated csv sheet successfully at " + root_path+"/Accounts/account_scan"+str(name)+".csv")
+    df.to_csv(path+"/Accounts/account_scan"+str(name)+".csv")
+    print("Generated csv sheet successfully at " + path+"/Accounts/account_scan"+str(name)+".csv")
 
 def csv_to_list(path):
+    # Reads from account_scan csv
+    # Returns the friends count in a Pandas DataFrame
     df = pd.read_csv(path)['friends_count'].values.tolist()
     return df
 
 def get_friends_of_friends_count(id=50000, write_csv=True):
+    # Finds friends' of friends count
+    # Input: id to find friends for and whether or not to export to .csv file
+    # Returns friends' of friends count along with their id
     friend_list_id = []
     friend_list_friends_count = []
     try:
@@ -90,20 +104,24 @@ def get_friends_of_friends_count(id=50000, write_csv=True):
     }
     if write_csv:
         df = pd.DataFrame(friend_list, columns=['id', 'friends_count'])
-        df.to_csv(root_path+"/Friends/friend_scan"+str(id)+".csv")
-        print("Generated csv sheet successfully at " + root_path+"/Friends/friend_scan"+str(id)+".csv")
+        df.to_csv(path+"/Friends/friend_scan"+str(id)+".csv")
+        print("Generated csv sheet successfully at " + path+"/Friends/friend_scan"+str(id)+".csv")
     return friend_list_friends_count
 
 def fof_scan(filename):
-    id_list = pd.read_csv(root_path+"/Accounts/account_scan"+str(filename)+".csv")['id'].values.tolist()
+    # Friends of friend scan
+    # Calls get_friends_of_friends_count
+    # Also checks if file already exists
+    id_list = pd.read_csv(path+"/Accounts/account_scan"+str(filename)+".csv")['id'].values.tolist()
     for i in id_list:
-        if (os.path.isfile(root_path+"/Friends/friend_scan"+str(i)+".csv")):
+        if (os.path.isfile(path+"/Friends/friend_scan"+str(i)+".csv")):
             print("A file with user " + str(i)+ " already exists.")
         else:
             get_friends_of_friends_count(id=i)
 
-#https://fairyonice.github.io/extract-someones-tweet-using-tweepy.html
 def run_tweet_scan(id=50000):
+    # Scans all tweets from a specific Twitter account, found by ID
+    # Inspired by/from https://fairyonice.github.io/extract-someones-tweet-using-tweepy.html
     try:
         api.get_user(id=id)
         print('Found user')
@@ -142,6 +160,9 @@ def run_tweet_scan(id=50000):
     return all_tweets
 
 def generate_tweets_csv(data:list, id):
+    # Generates a .csv file in /ScrapedData/Tweets from the dataset
+    # Input: list of tweet information, id of the user sheet
+    # Returns nothing
     tweet_create_time = []
     tweet_text = []
 
@@ -155,13 +176,16 @@ def generate_tweets_csv(data:list, id):
         'tweet_text': tweet_text
         }
     df = pd.DataFrame(user_list, columns=['created_at', 'tweet_text'])
-    df.to_csv(root_path+"/Tweets/tweet"+str(id)+".csv")
+    df.to_csv(path+"/Tweets/tweet"+str(id)+".csv")
     print("Generated csv sheet successfully")
 
 def word_scan(filename):
-    id_list = pd.read_csv(root_path+"/Accounts/account_scan"+str(filename)+".csv")['id'].values.tolist()
+    # Word scan from
+    # Calls run_tweet_scan and generate_tweets_csv
+    # Also checks if file already exists
+    id_list = pd.read_csv(path+"/Accounts/account_scan"+str(filename)+".csv")['id'].values.tolist()
     for i in id_list:
-        if (os.path.isfile(root_path+"/Tweets/tweet"+str(i)+".csv")):
+        if (os.path.isfile(path+"/Tweets/tweet"+str(i)+".csv")):
             print("A file with user " + str(i)+ " already exists.")
         else:
             try:
@@ -173,12 +197,17 @@ def word_scan(filename):
                 continue
 
 def run_full_scan(start_id=5375633):
+    # This is the main function for data gathering
+    # Runs the full scan by generating account .csv sheet
+    # Meant to run until manually terminated
+    # Ignores already gathered data, not replacing
+    # Runs friends of friends scan and afterwards tweet scan
+    # Calls fof_scan, word_scan, generate_account_csv
     print("Full scan begun...")
     last_id = start_id
     print("Checking previous csv sheets")
-    for file in os.listdir(root_path+"/Accounts/"):
-        if os.path.isfile(os.path.join(root_path+"/Accounts/",file)) and "account_scan"+str(start_id) in file:
-            
+    for file in os.listdir(path+"/Accounts/"):
+        if os.path.isfile(os.path.join(path+"/Accounts/",file)) and "account_scan"+str(start_id) in file:
             name = file.replace("account_scan", '')
             name = name.replace(".csv", '')
             print("Friends of friends")
@@ -202,8 +231,4 @@ def run_full_scan(start_id=5375633):
         last_id += 1
         for acc in accounts:
             print("Run scan for " +str(acc))
-
-
             print("Account finished")
-
-run_full_scan()
