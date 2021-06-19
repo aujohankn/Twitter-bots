@@ -1,10 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
+import os
 import pandas as pd
-import time
-import datetime
 import tm_tools
 
 def heatmap_plot(userID):
-    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Tweets\tweet" + str(userID) + ".csv")['created_at'].values.tolist()
+    # Reads the tweet timestamps from a specific Twitter account and generates the heated time map
+    print("Heatmap plot")
+    df = pd.read_csv(os.getcwd()+"\ScrapedData\Tweets\tweet" + str(userID) + ".csv")['created_at'].values.tolist()
     tm_tools.analyze_tweet_times(str(userID), df)

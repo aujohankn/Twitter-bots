@@ -1,45 +1,45 @@
-import tweepy
-import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-import timeit
 import os.path
-import nltk
 import string
 import re
 import langdetect as lang
-import math
 
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
 
-auth = tweepy.OAuthHandler("hthiIooKXUK1nN13UAH49ZOs2", "gWnJTNB3xy9nOrAUjTqdiQCIe3WxvgzQUZTD4EVXWT5uw0X9ju")
-auth.set_access_token("1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO", "1SRoyDU4RNdEFsIBTC4305V76yWFFrH0Br23TCmSzjfBh")
-
-api = tweepy.API(auth, wait_on_rate_limit=True, retry_count=10, retry_delay=10, retry_errors=set([104, 503]))
-
-
 stemmer = PorterStemmer()
-#https://www.geeksforgeeks.org/text-preprocessing-in-python-set-1/
-# stem words in the list of tokenised words
+
+path = os.getcwd()+"\ScrapedData\\"
+
 def stem_words(text):
+    # Stem words in the list of tokenised words
+    # From https://www.geeksforgeeks.org/text-preprocessing-in-python-set-1/
     word_tokens = word_tokenize(text)
     stems = [stemmer.stem(word) for word in word_tokens]
     return stems
-# remove punctuation
+
 def remove_punctuation(text):
+    # Remove punctuation
+    # From https://www.geeksforgeeks.org/text-preprocessing-in-python-set-1/
     translator = str.maketrans('', '', string.punctuation)
     return text.translate(translator)
-  
+
 def read_tweets(userID):
-    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Tweets\tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
+    # Reads the tweet csv and returns the tweet text in a Pandas DataFrame
+    df = pd.read_csv(path+"Tweets\tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
     return df
 
 def read_full_tweets(userID):
-    df = pd.read_csv(r"C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Tweets\tweet" + str(userID) + ".csv")
+    # Reads the tweet csv and returns the full tweet with text and time in a Pandas DataFrame
+    df = pd.read_csv(path+"\Tweets\tweet" + str(userID) + ".csv")
     return df
 
-def zipf_plot(data:list, userID):
+def zipf_plot(data:list):
+    # Draws the Zipf's law distribution from a dataset of tweet texts
+    # Also draws the expected distribution
+    # Input: List of tweet text strings
+    # Returns nothing
     words = []
     d = []
     tweet_count = len(data)
@@ -56,7 +56,6 @@ def zipf_plot(data:list, userID):
         text_words = text.split(",")
         words, d = zipf_plot_run_word_count(text_words, words, d)
     words.sort(key=lambda x:x[1], reverse=True)
-    print(words[:20])
     plt.rc('font', size=14)
     
     fig, ax = plt.subplots(figsize=(12, 6))
@@ -67,21 +66,32 @@ def zipf_plot(data:list, userID):
     zipf_n = words[0][1]
     for i in range(20):
         xax.append(words[i][0])
-        yax.append(math.log(words[i][1],10))
-        yax_expected.append(math.log(zipf_n/(i+1),10))
+        yax.append(words[i][1])
+        yax_expected.append(zipf_n/(i+1))
     ax.bar(xax, yax, label="User Data")
-    ax.set_xticklabels(xax, rotation=45)
+    try:
+        ax.set_xticklabels(xax, ha='right', rotation=45, rotation_mode='anchor')
+    except:
+        print("Something went wrong in Zipf")
+
     ax.set_ylabel("Word count")
     plt.plot(xax,yax_expected, c='red', label="Zipf's Law")
     
     plt.grid(color = 'grey', linestyle = '--', linewidth = 0.5, axis="y")
     plt.legend()
+    plt.tight_layout()
     plt.show()
     return None
 
 def zipf_plot_run_word_count(text_array, words, d):
+    # Counts the occurrence of every word in a list
+    # Input: List of text to count words,
+    # List of words with count (for recursion),
+    # d is list of used words
+    # Returns: List of words with their count,
+    # also returns a list of words without count
     for t in text_array:
-        t = t.strip("[]''’' ")
+        t = t.strip("[]''’' “”")
         t = deEmojify(t)
         if t.startswith("http") or t.isnumeric() or not t:
             continue
@@ -94,10 +104,14 @@ def zipf_plot_run_word_count(text_array, words, d):
     return words, d
 
 def load_and_zipf_plot(userID):
+    # Function for gui, simply runs the two functions in sequence
+    # Returns nothing
     tweets = read_tweets(userID)
-    zipf_plot(tweets, userID)
+    zipf_plot(tweets)
 
 def deEmojify(text):
+    # Removes emojis and other symbols
+    # From https://stackoverflow.com/questions/33404752/removing-emojis-from-a-string-in-python
     regrex_pattern = re.compile(pattern = "["
         u"\U0001F600-\U0001F64F"  # emoticons
         u"\U0001F300-\U0001F5FF"  # symbols & pictographs
@@ -106,4 +120,3 @@ def deEmojify(text):
                            "]+", flags = re.UNICODE)
     return regrex_pattern.sub(r'',text)
 
-#zipf_plot(read_tweets(10104622),10104622)

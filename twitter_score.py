@@ -1,12 +1,8 @@
 import os
-import re
-import matplotlib.pyplot as plt
 import numpy as np
 import langdetect as lang
-from numpy.lib.ufunclike import fix
 import pandas as pd
 import statistics
-import math
 
 from twitter_benfords_law import csv_to_list
 import twitter_zipfs_law as zl
@@ -20,6 +16,9 @@ most_common_words = ["the", "be", "to", "of", "and", "a", "in", "that", "have",
                     "this", "but" , "his", "by", "from", "they", "we", "say"]
 
 def benford_calculate_score(data:list):
+    # Calculates a score based on deviation from Benford's law
+    # Input: List of friends' friend count
+    # Returns score as float
     benford = [0.301, 0.176, 0.125, 0.097, 0.079, 0.067, 0.058, 0.051, 0.046]
     digits = np.arange(1,10)
     digit_probs = [0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -34,12 +33,14 @@ def benford_calculate_score(data:list):
         score += ((abs(d-n)/n)/9)*100
     return score
 
+
 def zipf_calculate_score(data:list):
+    # Calculates a score based on deviation from Zipf's law
+    # Input: List of tweet text strings
+    # Returns score as float
     words = []
     tweet_count = len(data)
-    
     d = []
-    
     for i,text in enumerate(data):
         try:
             l = lang.detect(str(text))
@@ -87,6 +88,10 @@ def zipf_calculate_score(data:list):
     return score
 
 def tweet_calculate_score(data):
+    # Calculates score for both Zipf's law and heated time maps
+    # Input: List of tweets with both text and timestamp
+    # Returns Zipf's law score and time map score
+    # Returns -1 if N/A
     tweet_text_list = data['tweet_text'].values.tolist()
     zipf_score = zipf_calculate_score(tweet_text_list)
     time_score:float = 0
@@ -103,19 +108,21 @@ def tweet_calculate_score(data):
                         statistics.median(sep_array[i,1] for i in range(len(sep_array)))]
     for point in sep_array:
         deviation = abs(point-time_median_dif)
-        #print(point,time_median_dif,deviation)
         if deviation[0] < time_threshold and deviation[1] < time_threshold:
             time_score += 100/len(sep_array)
     print("Average:",time_average_dif)
     print("Median:",time_median_dif)
-    #print(sep_array)
     return zipf_score, time_score
 
 def calculate_user_total_score(userID):
+    # Calculates the score from 
+    # Input: Twitter account id to generate score for
+    # Returns total score, Benford's law score, Zipf's law score, time map score in that order
+    # Returns -1 if N/A
     print("Calculating score for user", userID)
     try:
-        friend_list = csv_to_list(path+"/Friends/friend_scan"+str(userID)+".csv")
-        tweet_list = df = pd.read_csv(path+"/Tweets/tweet"+str(userID)+".csv")
+        friend_list = csv_to_list(r'C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Friends\friend_scan'+str(userID)+".csv")
+        tweet_list = pd.read_csv(r'C:\Users\johan\OneDrive - Aarhus universitet\UNI\3 år\bachelor\Ny mappe\Documents\ScrapedData\Tweets\tweet'+str(userID)+".csv")
     except FileNotFoundError as e:
         print(e)
         return -1, -1, -1, -1
@@ -132,18 +139,17 @@ def calculate_user_total_score(userID):
     return total_score, benford_score, zipf_score, time_score
 
 def run_score_scan():
+    # Runs the full score scan, looking at all gathered data,
+    # Generates a .csv file with score for all Twitter accounts gathered
     print("Begin score scan")
     file_list = os.listdir(path+'/Accounts/')
-
     user_id_list = []
     user_total_score_list = []
     user_benford_score_list = []
     user_zipf_score_list = []
     user_time_score_list = []
-
     for file in file_list:
         new_data = pd.read_csv(path+'/Accounts/' + file)
-
         for index, row in new_data.iterrows():
             userID = row[1]
             total_score, benford_score, zipf_score, time_score = calculate_user_total_score(userID)
@@ -162,10 +168,3 @@ def run_score_scan():
     df = pd.DataFrame(user_list, columns=['id', 'total_score', 'benford_score', 'zipf_score', 'time_score'])
     df.to_csv(path+"/Scores/score_scan.csv")
     print("End score scan")
-
-# time_threshold = 60
-# print("Threshold: ", time_threshold)
-# calculate_user_total_score(10104622)
-# calculate_user_total_score(973774553036898304)
-
-run_score_scan()

@@ -1,25 +1,24 @@
-import os,sys
+#A modified version of the file taken from github repository https://github.com/maxcw/time-maps
+
 import numpy as np
 import matplotlib.pylab as plt
-import pandas as pd
+
 import scipy.ndimage as ndi
 import datetime as dt
-from colour import Color
 
-
-def get_dt(t): # converts a twitter time string to a datetime object
+# Converts a twitter time string to a datetime object
+def get_dt(t): 
 	
 	my_datetime = dt.datetime.strptime(t,"%Y-%m-%d %H:%M:%S")
 	
 	return my_datetime
 
-
-def make_heated_time_map(name_to_get, sep_array, Nside, width): # plot heated time map. Nothing is returned
+# Plot heated time map. Nothing is returned
+def make_heated_time_map(name_to_get, sep_array, Nside, width): 
 
 	print('generating heated time map ...')
 	
-	# choose points within specified range. Example plot separations greater than 5 minutes:
-#	indices = (sep_array[:,0]>5*60) & (sep_array[:,1]>5*60)
+	# choose points within specified range
 	indices=range(sep_array.shape[0]) # all time separations
 
 	x_pts = np.log(sep_array[indices,0])
@@ -57,9 +56,9 @@ def make_heated_time_map(name_to_get, sep_array, Nside, width): # plot heated ti
 	my_max = np.max([np.max(sep_array[indices,0]), np.max(sep_array[indices,1])])
 	my_min = np.max([np.min(sep_array[indices,0]), np.min(sep_array[indices,1])])
 
-	pure_ticks = np.array([1e-3,1,10,60*10,2*3600,1*24*3600, 7*24*3600]) 
+	pure_ticks = np.array([1e-3,1,10,60,60*10,2*3600,1*24*3600, 7*24*3600]) 
 	# where the tick marks will be placed, in units of seconds. An additional value will be appended to the end for the max
-	labels = ['1 msec','1 sec','10 sec','10 min','2 hr','1 day','1 week']  # tick labels
+	labels = ['1 msec','1 sec','10 sec','1 min','10 min','2 hr','1 day','1 week']  # tick labels
 
 	index_lower=np.min(np.nonzero(pure_ticks >= my_min)) 
 	# index of minimum tick that is greater than or equal to the smallest time interval. This will be the first tick with a non-blank label
@@ -73,12 +72,12 @@ def make_heated_time_map(name_to_get, sep_array, Nside, width): # plot heated ti
 	ticks *= (Nside-1)/(max_val)
 	
 	labels= np.hstack(('',labels[index_lower:index_upper + 1],'')) # append blank labels to beginning and end
-	plt.xticks(ticks, labels,fontsize=14, rotation=45)
+	plt.xticks(ticks, labels,fontsize=14, ha='right', rotation=45, rotation_mode='anchor')
 	plt.yticks(ticks, labels,fontsize=14)
 	plt.xlabel('Time Before Tweet',fontsize=14)
 	plt.ylabel('Time After Tweet' ,fontsize=14)
 	plt.title("Heated Time Map")
-	#plt.savefig("Timemaps\m" +name_to_get+'.png', format='png', dpi=300)
+	plt.tight_layout()
 	plt.show()
 
 	return None
@@ -112,6 +111,6 @@ def analyze_tweet_times(name_to_get, all_tweets):
 
 	Nside=4*256 # number of pixels along the x and y directions
 	width=4 # the number of pixels that specifies the width of the Gaussians for the Gaussian filter
-	#make_heated_time_map(name_to_get, sep_array, Nside, width)
+	make_heated_time_map(name_to_get, sep_array, Nside, width)
 
 	return times,times_tot_mins,sep_array
