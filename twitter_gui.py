@@ -1,5 +1,6 @@
 # Modified version, taken from https://realpython.com/pysimplegui-python/
 
+from os import error
 import PySimpleGUI as sg
 import os.path
 import pandas as pd
@@ -8,6 +9,10 @@ import webbrowser
 import twitter_benfords_law as bl
 import twitter_zipfs_law as zl
 import twitter_timemaps as tm
+import twitter_auth as ta
+
+api = ta.get_api('hthiIooKXUK1nN13UAH49ZOs2', 'gWnJTNB3xy9nOrAUjTqdiQCIe3WxvgzQUZTD4EVXWT5uw0X9ju',
+                '1363777368519753729-dgXhlOUFQMt9OMDwZJhScjfaXOxuuO', '1SRoyDU4RNdEFsIBTC4305V76yWFFrH0Br23TCmSzjfBh')
 
 path = os.getcwd()+"\ScrapedData\\"
 
@@ -138,7 +143,8 @@ while True:
         else:
             try:
                 zl.load_and_zipf_plot(current_account_id)
-            except:
+            except error as e:
+                print(e)
                 sg.Popup("Unable to load tweets")
                 pass
     elif event == 'Generate Time Map':
@@ -147,9 +153,15 @@ while True:
         else:
             try:
                 tm.heatmap_plot(current_account_id)
-            except Exception as E:
+            except error as e:
+                print(e)
                 sg.Popup("Unable to load tweets")
                 pass
+            except ValueError as e:
+                print(e)
+                sg.Popup(e)
+                pass
+
     elif event == 'Go to Twitter page':
         go_to_twitter_page(current_account_id)
 # --------------------------------- Close & Exit ---------------------------------

@@ -14,7 +14,7 @@ def get_dt(t):
 	return my_datetime
 
 # Plot heated time map. Nothing is returned
-def make_heated_time_map(name_to_get, sep_array, Nside, width): 
+def make_heated_time_map(sep_array, Nside, width): 
 
 	print('generating heated time map ...')
 	
@@ -59,8 +59,15 @@ def make_heated_time_map(name_to_get, sep_array, Nside, width):
 	pure_ticks = np.array([1e-3,1,10,60,60*10,2*3600,1*24*3600, 7*24*3600]) 
 	# where the tick marks will be placed, in units of seconds. An additional value will be appended to the end for the max
 	labels = ['1 msec','1 sec','10 sec','1 min','10 min','2 hr','1 day','1 week']  # tick labels
+	
+	index_lower=np.min(np.nonzero(pure_ticks >= my_min))
+	
+	# try:
+	# 	index_lower=np.min(np.nonzero(pure_ticks >= my_min))
+	# except ValueError as e:
+	# 	print(e)
+	# 	return None
 
-	index_lower=np.min(np.nonzero(pure_ticks >= my_min)) 
 	# index of minimum tick that is greater than or equal to the smallest time interval. This will be the first tick with a non-blank label
 
 	index_upper=np.max(np.nonzero(pure_ticks <= my_max))
@@ -111,6 +118,6 @@ def analyze_tweet_times(name_to_get, all_tweets):
 
 	Nside=4*256 # number of pixels along the x and y directions
 	width=4 # the number of pixels that specifies the width of the Gaussians for the Gaussian filter
-	make_heated_time_map(name_to_get, sep_array, Nside, width)
+	make_heated_time_map(sep_array, Nside, width)
 
 	return times,times_tot_mins,sep_array

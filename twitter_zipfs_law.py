@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-import os.path
+import os
 import string
 import re
 import langdetect as lang
@@ -9,8 +9,6 @@ from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import word_tokenize
 
 stemmer = PorterStemmer()
-
-path = os.getcwd()+"\ScrapedData\\"
 
 def stem_words(text):
     # Stem words in the list of tokenised words
@@ -27,12 +25,14 @@ def remove_punctuation(text):
 
 def read_tweets(userID):
     # Reads the tweet csv and returns the tweet text in a Pandas DataFrame
-    df = pd.read_csv(path+"Tweets\tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
+    path = os.getcwd()+"\ScrapedData\Tweets\\" 
+    df = pd.read_csv(path+"tweet" + str(userID) + ".csv")['tweet_text'].values.tolist()
     return df
 
 def read_full_tweets(userID):
     # Reads the tweet csv and returns the full tweet with text and time in a Pandas DataFrame
-    df = pd.read_csv(path+"\Tweets\tweet" + str(userID) + ".csv")
+    path = os.getcwd()+"\ScrapedData\Tweets\\" 
+    df = pd.read_csv(path+"tweet" + str(userID) + ".csv")
     return df
 
 def zipf_plot(data:list):
@@ -40,6 +40,7 @@ def zipf_plot(data:list):
     # Also draws the expected distribution
     # Input: List of tweet text strings
     # Returns nothing
+    print(len(data))
     words = []
     d = []
     tweet_count = len(data)
@@ -64,7 +65,7 @@ def zipf_plot(data:list):
     yax = []
     yax_expected = []
     zipf_n = words[0][1]
-    for i in range(20):
+    for i in range(min(len(data),20)):
         xax.append(words[i][0])
         yax.append(words[i][1])
         yax_expected.append(zipf_n/(i+1))
